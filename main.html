@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Warehouse Checker</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        input { padding: 10px; width: 300px; }
+        .log { margin-top: 20px; white-space: pre-wrap; background: #f0f0f0; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h2>📦 Mobile Sentrix Order</h2>
+    <input id="skuInput" placeholder="Scan mã SKU và nhấn Enter" autofocus />
+    <div class="log" id="logOutput"></div>
+    <h3>📥 Tải lên file CSV sản phẩm</h3>
+    <input type="file" id="csvFileInput" accept=".csv" />
+    <pre id="fileStatus"></pre>
+
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="scan_check.js"></script>
+</body>
+</html>
