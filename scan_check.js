@@ -3,10 +3,47 @@ document.getElementById("csvFileInput").addEventListener("change", function (eve
     if (!file) return;
 
     Papa.parse(file, {
-        header: true, // Tự dùng dòng đầu tiên làm key
+        header: false, // Don't treat first row as headers initially
         skipEmptyLines: true,
         complete: function (results) {
-            expectedProducts = results.data;
+            // Find the row that contains "Product SKU"
+            let headerRowIndex = -1;
+            for (let i = 0; i < results.data.length; i++) {
+                const row = results.data[i];
+                if (row.some(cell => cell && cell.toString().includes("Product SKU"))) {
+                    headerRowIndex = i;
+                    break;
+                }
+            }
+            
+            if (headerRowIndex === -1) {
+                document.getElementById("fileStatus").textContent = `❌ Không tìm thấy header "Product SKU" trong file.`;
+                return;
+            }
+            
+            // Extract headers and data
+            const headers = results.data[headerRowIndex];
+            const dataRows = results.data.slice(headerRowIndex + 1);
+            
+            // Convert to objects using headers
+            expectedProducts = dataRows.map(row => {
+                const obj = {};
+                headers.forEach((header, index) => {
+                    if (header && row[index] !== undefined) {
+                        obj[header] = row[index];
+                    }
+                });
+                return obj;
+            }).filter(obj => {
+                const sku = obj["Product SKU"];
+                if (!sku) return false; // Filter out empty rows
+                
+                // Filter out summary/total rows
+                const skuStr = sku.toString().toLowerCase();
+                const excludeKeywords = ['subtotal', 'shipping', 'tax', 'grand total', 'paid by'];
+                return !excludeKeywords.some(keyword => skuStr.includes(keyword));
+            });
+            
             document.getElementById("fileStatus").textContent = `✅ Đã tải file ${file.name} với ${expectedProducts.length} dòng.`;
             console.log("🔍 Dữ liệu từ CSV:", expectedProducts);
 
@@ -31,17 +68,6 @@ document.getElementById("csvFileInput").addEventListener("change", function (eve
 
 
 let expectedProducts = [];
-
-    fetch("orderJSON.json")
-        .then(response => response.json())
-        .then(data => {
-            expectedProducts = data;
-            console.log("✅ Đã load xong JSON:", expectedProducts);
-
-            // scan file after load file JSON
-            initScan();
-        });
-
 
     function initScan() {
         const expectedMap = {};
