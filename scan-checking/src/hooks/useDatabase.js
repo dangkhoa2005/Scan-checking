@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { fetchDatabaseParts } from '../services/api.js';
+import { fetchDatabaseParts, addPartsToDatabase } from '../services/api.js';
 import { normalizeSku } from '../utils/sku.js';
 
 export function useDatabase() {
@@ -71,6 +71,46 @@ export function useDatabase() {
     }
   };
 
+  const handleAddMissingParts = async () => {
+    if (!missingParts.length) {
+      setDbStatus({ message: "Không có parts nào để thêm vào database.", type: "info" });
+      return;
+    }
+
+    setDbStatus({ message: "Đang thêm parts vào database...", type: "info" });
+    setIsLoading(true);
+
+    try {
+      const partsToAdd = missingParts.map(part => ({
+        sku: part.sku,
+        product_name: part.orderDescription,
+        quantity: parseInt(part.orderQuantity) || 0
+      }));
+
+      await addPartsToDatabase(partsToAdd);
+      setDbStatus({ 
+        message: `Đã thêm thành công ${missingParts.length} parts vào database.`, 
+        type: "success" 
+      });
+      
+      setAvailableParts(prev => [...prev, ...missingParts.map(part => ({
+        ...part,
+        dbName: part.orderDescription,
+        dbQuantity: part.orderQuantity
+      }))]);
+      setMissingParts([]);
+      
+    } catch (error) {
+      console.error("Add parts error", error);
+      setDbStatus({ 
+        message: `Không thể thêm parts vào database: ${error.message}`, 
+        type: "error" 
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const resetData = () => {
     setAvailableParts([]);
     setMissingParts([]);
@@ -83,6 +123,7 @@ export function useDatabase() {
     availableParts,
     missingParts,
     handleFetchFromDatabase,
+    handleAddMissingParts,
     resetData
   };
 }

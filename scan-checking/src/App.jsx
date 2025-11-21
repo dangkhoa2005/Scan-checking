@@ -10,7 +10,7 @@ import './App.css'
 
 function App() {
   const { expectedProducts, fileStatus, isFileReady, handleCsvUpload } = useCsvHandler();
-  const { dbStatus, isLoading, availableParts, missingParts, handleFetchFromDatabase, resetData } = useDatabase();
+  const { dbStatus, isLoading, availableParts, missingParts, handleFetchFromDatabase, handleAddMissingParts, resetData } = useDatabase();
   const { logs, handleScanInput, generateReport } = useScanner(expectedProducts);
 
   const onFileChange = (event) => {
@@ -23,31 +23,57 @@ function App() {
     handleFetchFromDatabase(expectedProducts);
   };
 
+  const onAddParts = () => {
+    handleAddMissingParts();
+  };
+
   return (
-    <div>
-      <h2>📦 Mobile Sentrix Order</h2>
-      <ScanInput 
-        onScanInput={handleScanInput}
-        onGenerateReport={generateReport}
-      />
-      <LogOutput logs={logs} />
-      
-      <FileUpload 
-        onFileChange={onFileChange}
-        fileStatus={fileStatus}
-      />
-      
-      <DatabaseControls 
-        onFetchDatabase={onFetchDatabase}
-        isLoading={isLoading}
-        isFileReady={isFileReady}
-        dbStatus={dbStatus}
-      />
-      
-      <ResultsGrid 
-        availableParts={availableParts}
-        missingParts={missingParts}
-      />
+    <div className="app-container">
+      <header className="app-header">
+        <h1 className="app-title">📦 Mobile Sentrix Order</h1>
+        <p className="app-subtitle">Warehouse Management & Inventory Checker</p>
+      </header>
+
+      <main className="main-content">
+        <div className="control-panel">
+          <div className="section">
+            <h3 className="section-title">🔍 SKU Scanner</h3>
+            <ScanInput 
+              onScanInput={handleScanInput}
+              onGenerateReport={generateReport}
+            />
+            <LogOutput logs={logs} />
+          </div>
+          
+          <div className="section">
+            <FileUpload 
+              onFileChange={onFileChange}
+              fileStatus={fileStatus}
+            />
+          </div>
+          
+          <div className="section">
+            <DatabaseControls 
+              onFetchDatabase={onFetchDatabase}
+              isLoading={isLoading}
+              isFileReady={isFileReady}
+              dbStatus={dbStatus}
+            />
+          </div>
+        </div>
+
+        <div className="results-section">
+          <div className="results-header">
+            <h2 className="results-title">📊 Inventory Analysis</h2>
+          </div>
+          <ResultsGrid 
+            availableParts={availableParts}
+            missingParts={missingParts}
+            onAddParts={onAddParts}
+            isLoading={isLoading}
+          />
+        </div>
+      </main>
     </div>
   )
 }

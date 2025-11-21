@@ -1,13 +1,13 @@
 export function FileUpload({ onFileChange, fileStatus }) {
   return (
     <div>
-      <h3>📥 Tải lên file CSV sản phẩm</h3>
+      <h3 className="section-title">📥 Upload CSV File</h3>
       <input 
         type="file" 
         accept=".csv" 
         onChange={onFileChange}
       />
-      <pre>{fileStatus}</pre>
+      {fileStatus && <pre>{fileStatus}</pre>}
     </div>
   );
 }
